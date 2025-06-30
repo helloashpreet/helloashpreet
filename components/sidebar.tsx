@@ -105,9 +105,9 @@ export default function Sidebar({
   } = useContext(SessionNotesContext);
 
   const notes = useMemo(
-    () => [...publicNotes, ...sessionNotes],
-    [publicNotes, sessionNotes]
-  );
+  () => [ ...(publicNotes ?? []), ...(sessionNotes ?? []) ],
+  [publicNotes, sessionNotes]
+);
 
   useEffect(() => {
     if (pathname) {
