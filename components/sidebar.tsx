@@ -44,7 +44,7 @@ export default function Sidebar({
   onNoteSelect,
   isMobile,
 }: {
-  notes: any[];
+  notes: any[] | null | undefined; // <-- allow undefined
   onNoteSelect: (note: any) => void;
   isMobile: boolean;
 }) {
@@ -56,58 +56,25 @@ export default function Sidebar({
   const [pinnedNotes, setPinnedNotes] = useState<Set<string>>(new Set());
   const pathname = usePathname();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [localSearchResults, setLocalSearchResults] = useState<any[] | null>(
-    null
-  );
+  const [localSearchResults, setLocalSearchResults] = useState<any[] | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [groupedNotes, setGroupedNotes] = useState<any>({});
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [openSwipeItemSlug, setOpenSwipeItemSlug] = useState<string | null>(
-    null
-  );
+  const [openSwipeItemSlug, setOpenSwipeItemSlug] = useState<string | null>(null);
   const [highlightedNote, setHighlightedNote] = useState<Note | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const commandMenuRef = useRef<{ setOpen: (open: boolean) => void } | null>(
-    null
-  );
-
+  const commandMenuRef = useRef<{ setOpen: (open: boolean) => void } | null>(null);
   const selectedNoteRef = useRef<HTMLDivElement>(null);
-
   const scrollViewportRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (selectedNoteSlug && scrollViewportRef.current) {
-      const selectedElement = scrollViewportRef.current.querySelector(`[data-note-slug="${selectedNoteSlug}"]`);
-      if (selectedElement) {
-        selectedElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest'
-        });
-      }
-    }
-  }, [selectedNoteSlug]);
-
-  useEffect(() => {
-    if (selectedNoteRef.current) {
-      selectedNoteRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest'
-      });
-    }
-  }, [selectedNoteSlug, highlightedIndex]);
-
-  const {
-    notes: sessionNotes,
-    sessionId,
-    setSessionId,
-    refreshSessionNotes,
-  } = useContext(SessionNotesContext);
+  const { notes: sessionNotes, sessionId, setSessionId, refreshSessionNotes } =
+    useContext(SessionNotesContext);
 
   const notes = useMemo(
-  () => [ ...(publicNotes ?? []), ...(sessionNotes ?? []) ],
-  [publicNotes, sessionNotes]
-);
+    () => [ ...(publicNotes ?? []), ...(sessionNotes ?? []) ],
+    [publicNotes, sessionNotes]
+  );
 
   useEffect(() => {
     if (pathname) {
@@ -172,7 +139,7 @@ export default function Sidebar({
     if (searchInputRef.current) {
       searchInputRef.current.value = "";
     }
-  }, [setLocalSearchResults, setHighlightedIndex]);
+  }, []);
 
   const flattenedNotes = useCallback(() => {
     return categoryOrder.flatMap((category) =>
@@ -187,7 +154,7 @@ export default function Sidebar({
         const currentIndex = flattened.findIndex(
           (note) => note.slug === selectedNoteSlug
         );
-        
+
         let nextIndex;
         if (direction === "up") {
           nextIndex =
@@ -198,14 +165,18 @@ export default function Sidebar({
         }
 
         const nextNote = flattened[nextIndex];
-        
+
         if (nextNote) {
           router.push(`/notes/${nextNote.slug}`);
-          // Wait for router navigation and React re-render
           setTimeout(() => {
-            const selectedElement = document.querySelector(`[data-note-slug="${nextNote.slug}"]`);
+            const selectedElement = document.querySelector(
+              `[data-note-slug="${nextNote.slug}"]`
+            );
             if (selectedElement) {
-              selectedElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              selectedElement.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+              });
             }
           }, 100);
         }
