@@ -44,7 +44,7 @@ export default function Sidebar({
   onNoteSelect,
   isMobile,
 }: {
-  notes: any[] | null | undefined; // <-- allow undefined
+  notes: any[] | null | undefined;
   onNoteSelect: (note: any) => void;
   isMobile: boolean;
 }) {
@@ -281,97 +281,7 @@ export default function Sidebar({
     ]
   );
 
-  const goToHighlightedNote = useCallback(() => {
-    if (localSearchResults && localSearchResults[highlightedIndex]) {
-      const selectedNote = localSearchResults[highlightedIndex];
-      router.push(`/notes/${selectedNote.slug}`);
-      setTimeout(() => {
-        const selectedElement = document.querySelector(`[data-note-slug="${selectedNote.slug}"]`);
-        selectedElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 0);
-      clearSearch();
-    }
-  }, [localSearchResults, highlightedIndex, router, clearSearch]);
-
   const { setTheme, theme } = useTheme();
-
-  useEffect(() => {
-    const shortcuts = {
-      j: () => navigateNotes("down"),
-      ArrowDown: () => navigateNotes("down"),
-      k: () => navigateNotes("up"),
-      ArrowUp: () => navigateNotes("up"),
-      p: () => highlightedNote && handlePinToggle(highlightedNote.slug),
-      d: () => highlightedNote && handleNoteDelete(highlightedNote),
-      "/": () => searchInputRef.current?.focus(),
-      Escape: () => (document.activeElement as HTMLElement)?.blur(),
-      t: () => setTheme(theme === "dark" ? "light" : "dark"),
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement;
-      const isTyping =
-        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) ||
-        target.isContentEditable;
-
-      if (isTyping) {
-        if (event.key === "Escape") {
-          shortcuts["Escape"]();
-        } else if (
-          event.key === "Enter" &&
-          localSearchResults &&
-          localSearchResults.length > 0
-        ) {
-          event.preventDefault();
-          goToHighlightedNote();
-        }
-        return;
-      }
-
-      const key = event.key as keyof typeof shortcuts;
-      if (shortcuts[key] && !(event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        (document.activeElement as HTMLElement)?.blur();
-
-        if (
-          localSearchResults &&
-          ["j", "ArrowDown", "k", "ArrowUp"].includes(key)
-        ) {
-          const direction = ["j", "ArrowDown"].includes(key) ? 1 : -1;
-          setHighlightedIndex(
-            (prevIndex) =>
-              (prevIndex + direction + localSearchResults.length) %
-              localSearchResults.length
-          );
-        } else {
-          shortcuts[key]();
-        }
-      } else if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        commandMenuRef.current?.setOpen(true);
-      } else if (
-        event.key === "Enter" &&
-        localSearchResults &&
-        localSearchResults.length > 0
-      ) {
-        event.preventDefault();
-        goToHighlightedNote();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    navigateNotes,
-    highlightedNote,
-    handlePinToggle,
-    localSearchResults,
-    setHighlightedIndex,
-    handleNoteDelete,
-    commandMenuRef,
-    goToHighlightedNote,
-    theme,
-  ]);
 
   const handleNoteSelect = useCallback(
     (note: any) => {
@@ -401,19 +311,7 @@ export default function Sidebar({
           isScrolled={isScrolled}
         />
       </div>
-      <ScrollArea 
-        className="flex-1" 
-        onScrollCapture={(e: React.UIEvent<HTMLDivElement>) => {
-          const viewport = e.currentTarget.querySelector(
-            '[data-radix-scroll-area-viewport]'
-          );
-          if (viewport) {
-            const scrolled = viewport.scrollTop > 0;
-            setIsScrolled(scrolled);
-          }
-        }}
-        isMobile={isMobile}
-      >
+      <ScrollArea className="flex-1">
         <div ref={scrollViewportRef} className="flex flex-col w-full">
           <SessionId setSessionId={setSessionId} />
           <CommandMenu
