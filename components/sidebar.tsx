@@ -71,10 +71,10 @@ export default function Sidebar({
   const { notes: sessionNotes, sessionId, setSessionId, refreshSessionNotes } =
     useContext(SessionNotesContext);
 
-  const notes = useMemo(
-    () => [ ...(publicNotes ?? []), ...(sessionNotes ?? []) ],
-    [publicNotes, sessionNotes]
-  );
+ const notes = useMemo(
+  () => [ ...(publicNotes || []), ...(sessionNotes || []) ],
+  [publicNotes, sessionNotes]
+);
 
   useEffect(() => {
     if (pathname) {
